@@ -15,7 +15,6 @@ class tweeter_post{
     overflow: auto;
     }
     form{
-
     }
     textarea{resize: none;}
     body{
@@ -149,7 +148,8 @@ class tweeter_post{
                     </script>');
                 foreach($accounts as $account){
                     if (strlen($account[0]) > 5){
-                        printnow('<script>document.getElementById("result").innerHTML += "[+] '.htmlentities($account[0]).$this->post($this->login($account[0], $account[1]), $_POST['post']).'".replace(/(\r\n|\n|\r)/gm,"")+"\n";</script>');
+                        sleep(1);
+                        printnow('<script>document.getElementById("result").innerHTML += "[+] '.htmlentities($account[0]).$this->post($this->login(rtrim($account[0]), rtrim($account[1])), $_POST['post']).'".replace(/(\r\n|\n|\r)/gm,"")+"\n";</script>');
                     }
                 }
             }
@@ -239,7 +239,6 @@ class tweeter_post{
                     }
                 }
                 catch (Exception $e){
-
                 }
             }
             foreach($doc->getElementsByTagName('form') as $form){
@@ -251,9 +250,7 @@ class tweeter_post{
                         @fopen('my_cookies.txt', 'w');
                     }
                 }catch (Exception $e){
-
                 }
-
             }
             $opt = rtrim($opt, ' &');
             curl_setopt($ch, CURLOPT_URL, $url);
@@ -300,7 +297,6 @@ class tweeter_post{
                         }
                     }
                     catch (Exception $e){
-
                     }
                 }
                 foreach ($doc->getElementsByTagName('textarea') as $input){
@@ -315,7 +311,6 @@ class tweeter_post{
                         }
                     }
                     catch (Exception $e){
-
                     }
                 }
                 foreach($doc->getElementsByTagName('form') as $form){
