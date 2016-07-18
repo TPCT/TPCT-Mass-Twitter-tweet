@@ -329,19 +329,24 @@ class tweeter_post{
                 $find = new DOMXPath($doc);
                 $nodes = $find->query("//a[@href='/compose/tweet']");
                 if ($nodes->length > 0){
+                    @unlink($this->c);
                     return ' Succeed';
                 }
                 else{
+                    @unlink($this->c);
                     return ' Failed';
                 }
             }
             else{
+                @unlink($this->c);
                 return ' Failed';
             }
         }
         else{
+            @unlink($this->c);
             return " Failed";
         }
+        @unlink($this->c);
         return false;
     }
 }
