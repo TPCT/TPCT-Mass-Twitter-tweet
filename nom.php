@@ -44,7 +44,7 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
 
                     foreach ($accounts as $account) {
                         if (strlen($account[0]) > 5) {
-                            sleep(1);
+                            sleep(3);
                             printnow(htmlentities($account[0]) . $this->post($this->login(rtrim($account[0]), rtrim($account[1])), $_POST['post']));
                         }
                     }
@@ -193,6 +193,10 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
                     $page = curl_exec($ch);
                     @$doc->loadHTML($page);
                     $find = new DOMXPath($doc);
+                    $nodes = $find->query('//div[@class="toast toast-error"]');
+                    if ($nodes->length > 0){
+                        return ' Failed';
+                    } else{
                     $nodes = $find->query("//a[@href='/compose/tweet']");
                     if ($nodes->length > 0) {
                         @unlink(realpath($this->c));
@@ -200,6 +204,7 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
                     } else {
                         @unlink(realpath($this->c));
                         return ' Failed';
+                    }
                     }
                 } else {
                     @unlink(realpath($this->c));
