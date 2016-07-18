@@ -75,7 +75,7 @@ $data_main = "<html xmlns=\"http://www.w3.org/1999/html\"><head><title>TPCT Twit
     <center><label>accounts list <br/><textarea name=\"acc\" id=\"acc\"></textarea></label></center><hr/>
         <center><label>Tweet<br/><textarea name=\"post\" id=\"tweet\" onkeyup=\"checker();\"></textarea><hr></label><label id=\"count\"></label></center><hr/>
         <input type=\"submit\" id=\"submit\" name=\"submit\" value=\"Post\" onclick=\"post();\"/><hr/>
-        <label id='status'></label>
+        <pre id='status'></pre>
 </fieldset>
        <script>
     function post(){
@@ -96,15 +96,16 @@ $data_main = "<html xmlns=\"http://www.w3.org/1999/html\"><head><title>TPCT Twit
                                 var return_data = xhr[i].responseText;
                                 if (document.getElementById(\"status\").innerHTML == 'Initializing') {
                                     document.getElementById(\"status\").innerHTML = '';
-                                    document.getElementById(\"status\").innerHTML += return_data + \"\\n\";
+                                    document.getElementById(\"status\").innerHTML += return_data ;
                                 }
                                 else {
-                                    document.getElementById(\"status\").innerHTML += return_data + \"\\n\";
+                                    document.getElementById(\"status\").innerHTML += return_data ;
                                 }
                             }
                         };
                         xhr[i].send(vars);
-                    })(i);
+                    }
+                   )(i);
                 }
             })();
     }
