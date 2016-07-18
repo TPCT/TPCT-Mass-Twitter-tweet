@@ -149,7 +149,7 @@ class tweeter_post{
                     </script>');
                 foreach($accounts as $account){
                     if (strlen($account[0]) > 5){
-                        printnow('<script>document.getElementById("result").innerHTML += "[+] '.$account[0].$this->post($this->login($account[0], $account[1]), $_POST['post']).'".replace(/(\r\n|\n|\r)/gm,"")+"\n";</script>');
+                        printnow('<script>document.getElementById("result").innerHTML += "[+] '.htmlentities($account[0]).$this->post($this->login($account[0], $account[1]), $_POST['post']).'".replace(/(\r\n|\n|\r)/gm,"")+"\n";</script>');
                     }
                 }
             }
