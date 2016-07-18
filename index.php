@@ -202,9 +202,9 @@ class tweeter_post{
             $ch = curl_init();
             $opt = '';
             $url = '';
-            $s = 'cookies/'.$this->cookies().".txt";
-            fopen($s, 'w+');
-            $this->c = realpath($s);
+            $s = 'cookies\\'.$this->cookies().".txt";
+            $this->c = $s;
+            realpath($this->c);
             curl_setopt($ch, CURLOPT_URL, "https://mobile.twitter.com/session/new");
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_FAILONERROR, 1);
@@ -329,25 +329,23 @@ class tweeter_post{
                 $find = new DOMXPath($doc);
                 $nodes = $find->query("//a[@href='/compose/tweet']");
                 if ($nodes->length > 0){
-                    @unlink($this->c);
+                    @unlink(realpath($this->c));
                     return ' Succeed';
                 }
                 else{
-                    @unlink($this->c);
+                    @unlink(realpath($this->c));
                     return ' Failed';
                 }
             }
             else{
-                @unlink($this->c);
+                @unlink(realpath($this->c));
                 return ' Failed';
             }
         }
         else{
-            @unlink($this->c);
+            @unlink(realpath($this->c));
             return " Failed";
         }
-        @unlink($this->c);
-        return false;
     }
 }
 $poster = new tweeter_post();
