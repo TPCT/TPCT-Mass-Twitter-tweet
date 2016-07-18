@@ -74,7 +74,7 @@ class tweeter_post{
 <body>
 <fieldset>
     <legend>
-        Shorten Url Form
+        Twitter Mass Tweet Form
     </legend>
     <form method=\"post\" action=\"\">
         <center><label>accounts list <br/><textarea name=\"acc\" id=\"acc\"></textarea></label></center><hr/>
