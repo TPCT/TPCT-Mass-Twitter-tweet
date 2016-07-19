@@ -6,7 +6,6 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
     while (@ob_end_flush()) ;
     ini_set('implicit_flush', true);
     ob_implicit_flush(true);
-
     class tweeter_post
     {
         private function cookies()
@@ -14,17 +13,11 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
             $cookie_file = substr(str_shuffle(str_repeat((string)(rand(0, PHP_INT_MAX)), 27)), 0, 5) . substr(str_shuffle(str_repeat("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 27)), 0, 7) . substr(str_shuffle(str_repeat((string)(rand(0, PHP_INT_MAX)), 27)), 0, 5);
             return $cookie_file;
         }
-
         private $c = '';
-
         function __construct()
         {
-            if (!is_dir('cookies')) {
-                mkdir('cookies');
-            }
             $this->start();
         }
-
         function start()
         {
             if (isset($_POST['acc']) and isset($_POST['post'])) {
@@ -41,16 +34,15 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
                             flush();
                         }
                     }
-
                     foreach ($accounts as $account) {
                         if (strlen($account[0]) > 5) {
                             sleep(3);
                             printnow(htmlentities($account[0]) . $this->post($this->login(rtrim($account[0]), rtrim($account[1])), $_POST['post']));
                         }
                     }
-                } elseif (!strlen($_POST['post']) <= 140 or !strlen($_POST['post']) > 0) {
+                } elseif (!strlen($_POST['post']) > 140 or !strlen($_POST['post']) > 0) {
                     echo 'Tweet Size Must Be Greater Than 0.';
-                } elseif (!strlen($_POST['acc']) <= 140 or !strlen($_POST['acc']) > 0) {
+                } elseif (!strlen($_POST['acc']) > 0) {
                     echo 'accounts count Must Be Greater Than 0.';
                 } else {
                     echo 'You Must Set Accounts And Tweet.';;
@@ -58,7 +50,6 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
             } else {
             }
         }
-
         function da($data = null)
         {
             if (isset($data)) {
@@ -76,7 +67,6 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
                 return null;
             }
         }
-
         function login($username = null, $password = null)
         {
             if (isset($password) and isset($username)) {
@@ -151,7 +141,6 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
             }
             return null;
         }
-
         function post($ch = null, $tweet = null)
         {
             if (isset($ch) and isset($tweet)) {
@@ -197,14 +186,14 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
                     if ($nodes->length > 0){
                         return ' Failed';
                     } else{
-                    $nodes = $find->query("//a[@href='/compose/tweet']");
-                    if ($nodes->length > 0) {
-                        @unlink(realpath($this->c));
-                        return ' Succeed';
-                    } else {
-                        @unlink(realpath($this->c));
-                        return ' Failed';
-                    }
+                        $nodes = $find->query("//a[@href='/compose/tweet']");
+                        if ($nodes->length > 0) {
+                            @unlink(realpath($this->c));
+                            return ' Succeed';
+                        } else {
+                            @unlink(realpath($this->c));
+                            return ' Failed';
+                        }
                     }
                 } else {
                     @unlink(realpath($this->c));
@@ -216,7 +205,6 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
             }
         }
     }
-
     $poster = new tweeter_post();
 }
 ?>
