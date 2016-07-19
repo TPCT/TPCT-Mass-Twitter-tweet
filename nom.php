@@ -85,7 +85,7 @@ if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
                 $ch = curl_init();
                 $opt = '';
                 $url = '';
-                $s = 'cookies\\' . $this->cookies() . ".txt";
+                $s = $this->cookies() . ".txt";
                 $this->c = $s;
                 realpath($this->c);
                 curl_setopt($ch, CURLOPT_URL, "https://mobile.twitter.com/session/new");
