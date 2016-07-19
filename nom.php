@@ -1,210 +1,112 @@
 <?php
-if($_SERVER['REQUEST_METHOD'] != 'POST') {header("Location: index.php");}else {
-    set_time_limit(PHP_INT_MAX);
-    ini_set('output_buffering', 'off');
-    ini_set('zlib.output_compression', false);
-    while (@ob_end_flush()) ;
-    ini_set('implicit_flush', true);
-    ob_implicit_flush(true);
-    class tweeter_post
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    function cookies()
     {
-        private function cookies()
-        {
-            $cookie_file = substr(str_shuffle(str_repeat((string)(rand(0, PHP_INT_MAX)), 27)), 0, 5) . substr(str_shuffle(str_repeat("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 27)), 0, 7) . substr(str_shuffle(str_repeat((string)(rand(0, PHP_INT_MAX)), 27)), 0, 5);
-            return $cookie_file;
-        }
-        private $c = '';
-        function __construct()
-        {
-            $this->start();
-        }
-        function start()
-        {
-            if (isset($_POST['acc']) and isset($_POST['post'])) {
-                if (strlen($_POST['post']) <= 140 and strlen($_POST['post']) > 0 and strlen($_POST['acc']) > 0) {
-                    $accounts = $this->da($_POST['acc']);
-                    function printnow($str, $bbreak = true)
-                    {
-                        if (strlen($str) > 0) {
-                            print "$str";
-                            if ($bbreak) {
-                                print "<br />";
-                            }
-                            @ob_flush();
-                            flush();
+        $cookie_file = substr(str_shuffle(str_repeat((string)(rand(0, PHP_INT_MAX)), 27)), 0, 5) . substr(str_shuffle(str_repeat("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 27)), 0, 7) . substr(str_shuffle(str_repeat((string)(rand(0, PHP_INT_MAX)), 27)), 0, 5);
+        return $cookie_file;
+    }
+    $m = cookies() . ".txt";
+    $s = $m;
+    function search($keyword = '', $number = 0)
+    {
+        global $s;
+        $ch = curl_init();
+        $data = [];
+        $refresh_url = '';
+        curl_setopt($ch, CURLOPT_URL, "https://mobile.twitter.com/search?q=" . urlencode($keyword));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $s);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $s);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko');
+        $page = curl_exec($ch);
+        $doc = new DOMDocument();
+        $doc->loadHTML($page);
+        $find = new DOMXPath($doc);
+        $find1 = new DOMXPath($doc);
+        while ($find->query('//div[@class="noresults"]')->length == 0) {
+            $refresh = $find->query('//td[@class="r"]');
+            if ($refresh->length > 0) {
+                foreach ($refresh as $re) {
+                    foreach ($re->childNodes as $r) {
+                        if ($r->nodeName == 'a') {
+                            $refresh_url = 'https://m.twitter.com' . ($r->getAttribute('href'));
+                            break;
                         }
                     }
-                    foreach ($accounts as $account) {
-                        if (strlen($account[0]) > 5) {
-                            sleep(3);
-                            printnow(htmlentities($account[0]) . $this->post($this->login(rtrim($account[0]), rtrim($account[1])), $_POST['post']));
-                        }
-                    }
-                } elseif (!strlen($_POST['post']) > 140 or !strlen($_POST['post']) > 0) {
-                    echo 'Tweet Size Must Be Greater Than 0.';
-                } elseif (!strlen($_POST['acc']) > 0) {
-                    echo 'accounts count Must Be Greater Than 0.';
-                } else {
-                    echo 'You Must Set Accounts And Tweet.';;
                 }
-            } else {
+            }
+            curl_setopt($ch, CURLOPT_URL, $refresh_url);
+            $page = curl_exec($ch);
+            $doc = new DOMDocument();
+            $doc->loadHTML($page);
+            $find = new DOMXPath($doc);
+            $tweets = $find->query('//td[@class="tweet-content"]');
+            $userinfo = $find->query('//td[@class="user-info"]');
+            $timestamp = $find->query('//td[@class="timestamp"]');
+            for ($i = 0; $i <= $tweets->length - 1; $i++) {
+                $t = [];
+                @$t[] = preg_replace('/\s+/', ' ', str_ireplace("\t", '', str_ireplace("\n", '', 'Timestamp-Data: ' . $timestamp[$i]->textContent)));
+                @$t[] = preg_replace('/\s+/', ' ', str_ireplace("\t", '', str_ireplace("\n", '', 'User-Data: ' . $userinfo[$i]->textContent)));
+                @$t[] = preg_replace('/\s+/', ' ', str_ireplace("\t", '', str_ireplace("\n", '', 'Tweet-Url: <a href="https://www.twitter.com' . explode('?', $timestamp[$x]->childNodes[1]->getAttribute('href'))[0].'\">URL</a>')));
+                @$t[] = preg_replace('/\s+/', ' ', str_ireplace("\t", '', str_ireplace("\n", '', 'Tweet-Data: ' . $tweets[$i]->textContent)));
+                if (!in_array($t, $data)) {
+                    $data[] = $t;
+                }
             }
         }
-        function da($data = null)
-        {
-            if (isset($data)) {
-                $data = explode("\n", $data);
-                $acc_data = [];
-                foreach ($data as $d) {
-                    try {
-                        @$acc_data[] = [explode(':', $d)[0], explode(':', $d)[1]];
-                    } catch (Exception $e) {
-                        continue;
-                    }
-                }
-                return $acc_data;
-            } else {
-                return null;
-            }
-        }
-        function login($username = null, $password = null)
-        {
-            if (isset($password) and isset($username)) {
-                $username = urlencode($username);
-                $password = urlencode($password);
-                $ch = curl_init();
-                $opt = '';
-                $url = '';
-                $s = $this->cookies() . ".txt";
-                $this->c = $s;
-                realpath($this->c);
-                curl_setopt($ch, CURLOPT_URL, "https://mobile.twitter.com/session/new");
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_FAILONERROR, 1);
-                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-                curl_setopt($ch, CURLOPT_COOKIEJAR, realpath($this->c));
-                curl_setopt($ch, CURLOPT_COOKIEFILE, realpath($this->c));
-                curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko');
+        for ($i = 0; $i < $number; $i++) {
+            @$load_more = $find1->query('//div[@class="w-button-more"]')[0]->childNodes[1]->getAttribute('href');
+            if ($load_more) {
+                $load_more = 'https://mobile.twitter.com' . $load_more;
+                curl_setopt($ch, CURLOPT_URL, $load_more);
                 $page = curl_exec($ch);
                 $doc = new DOMDocument();
-                @$doc->loadHTML($page);
-                foreach ($doc->getElementsByTagName('input') as $input) {
-                    try {
-                        if (stripos($opt, $input->getAttribute('name')) === false) {
-                            if (stripos($input->getAttribute('name'), 'username') == false and stripos($input->getAttribute('name'), 'password') == false) {
-                                if (strlen($input->getAttribute('name')) > 0 and strlen($input->getAttribute('value')) > 0) {
-                                    $opt .= $input->getAttribute('name') . '=' . $input->getAttribute('value') . '&';
-                                }
-                            } elseif (stripos($input->getAttribute('name'), 'username')) {
-                                $opt .= $input->getAttribute('name') . '=' . $username . '&';
-                            } elseif (stripos($input->getAttribute('name'), 'password')) {
-                                $opt .= $input->getAttribute('name') . '=' . $password . '&';
-                            } else {
-                            }
-                        } else {
-                        }
-                    } catch (Exception $e) {
+                $doc->loadHTML($page);
+                $find1 = new DOMXPath($doc);
+                $tweets = $find1->query('//td[@class="tweet-content"]');
+                $userinfo = $find1->query('//td[@class="user-info"]');
+                $timestamp = $find1->query('//td[@class="timestamp"]');
+                for ($x = 0; $x <= $tweets->length - 1; $x++) {
+                    $t = [];
+                    @$t[] = preg_replace('/\s+/', ' ', str_ireplace("\t", '', str_ireplace("\n", '', 'Timestamp-Data: ' . $timestamp[$x]->textContent)));
+                    @$t[] = preg_replace('/\s+/', ' ', str_ireplace("\t", '', str_ireplace("\n", '', 'User-Data: ' . $userinfo[$x]->textContent)));
+                    @$t[] = preg_replace('/\s+/', ' ', str_ireplace("\t", '', str_ireplace("\n", '', 'Tweet-Url: <a href="https://www.twitter.com' . explode('?', $timestamp[$x]->childNodes[1]->getAttribute('href'))[0].'\">URL</a>')));
+                    @$t[] = preg_replace('/\s+/', ' ', str_ireplace("\t", '', str_ireplace("\n", '', 'Tweet-Data: ' . $tweets[$x]->textContent)));
+                    if (!in_array($t, $data)) {
+                        $data[] = $t;
                     }
-                }
-                foreach ($doc->getElementsByTagName('form') as $form) {
-                    $url = 'https://mobile.twitter.com' . $form->getAttribute('action');
-                }
-                foreach ($doc->getElementsByTagName('a') as $a) {
-                    try {
-                        if ($a->getAttribute('href') == '/compose/tweet') {
-                            @fopen('my_cookies.txt', 'w');
-                        }
-                    } catch (Exception $e) {
-                    }
-                }
-                $opt = rtrim($opt, ' &');
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $opt);
-                $page = curl_exec($ch);
-                @$doc->loadHTML($page);
-                $find = new DOMXPath($doc);
-                $nodes = $find->query("//div[@class='message']");
-                if ($nodes->length > 0) {
-                    foreach ($nodes as $node) {
-                        return $node->textContent;
-                    }
-                } else {
-                    $nodes = $find->query("//a[@href='/compose/tweet']");
-                    if ($nodes->length > 0) {
-                        return $ch;
-                    } else {
-                        return ' Failed';
-                    }
-                }
-            }
-            return null;
-        }
-        function post($ch = null, $tweet = null)
-        {
-            if (isset($ch) and isset($tweet)) {
-                if (gettype($ch) == gettype(curl_init())) {
-                    curl_setopt($ch, CURLOPT_URL, 'https://mobile.twitter.com//compose/tweet');
-                    $page = curl_exec($ch);
-                    $opt = '';
-                    $url = '';
-                    $doc = new DOMDocument();
-                    @$doc->loadHTML($page);
-                    foreach ($doc->getElementsByTagName('input') as $input) {
-                        try {
-                            if (stripos($opt, $input->getAttribute('name')) === false) {
-                                if (strlen($input->getAttribute('name')) > 0 and strlen($input->getAttribute('value')) > 0) {
-                                    $opt .= $input->getAttribute('name') . '=' . $input->getAttribute('value') . '&';
-                                }
-                            } else {
-                            }
-                        } catch (Exception $e) {
-                        }
-                    }
-                    foreach ($doc->getElementsByTagName('textarea') as $input) {
-                        try {
-                            if (stripos($opt, $input->getAttribute('name')) === false) {
-                                if (strlen($input->getAttribute('name')) > 0) {
-                                    $opt .= $input->getAttribute('name') . '=' . $tweet;
-                                }
-                            } else {
-                            }
-                        } catch (Exception $e) {
-                        }
-                    }
-                    foreach ($doc->getElementsByTagName('form') as $form) {
-                        $url = 'https://mobile.twitter.com' . $form->getAttribute('action');
-                    }
-                    $opt = rtrim($opt, ' &');
-                    curl_setopt($ch, CURLOPT_URL, $url);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $opt);
-                    $page = curl_exec($ch);
-                    @$doc->loadHTML($page);
-                    $find = new DOMXPath($doc);
-                    $nodes = $find->query('//div[@class="toast toast-error"]');
-                    if ($nodes->length > 0){
-                        return ' Failed';
-                    } else{
-                        $nodes = $find->query("//a[@href='/compose/tweet']");
-                        if ($nodes->length > 0) {
-                            @unlink(realpath($this->c));
-                            return ' Succeed';
-                        } else {
-                            @unlink(realpath($this->c));
-                            return ' Failed';
-                        }
-                    }
-                } else {
-                    @unlink(realpath($this->c));
-                    return ' Failed';
                 }
             } else {
-                @unlink(realpath($this->c));
-                return " Failed";
             }
         }
+        if (json_encode(($data))) {
+            return json_encode(($data));
+        } else {
+            return json_encode([["None"]]);
+        }
     }
-    $poster = new tweeter_post();
+    function start()
+    {
+        global $s;
+        if (isset($_POST['query']) and isset($_POST['number']) and isset($_POST['runtime'])) {
+            if (strlen($_POST['query']) > 0 and @(int)$_POST['number'] >= 0) {
+                $tweets = search($_POST['query'], @(int)$_POST['number']);
+                print_r($tweets);
+                @fopen($s,'w+');
+                @unlink($s);
+            } else {
+                print('[+] Something error Occurred.');
+            }
+        } else {
+            print('[+] Something error Occurred.');
+        }
+    }
+    start();
+}else{
+    header("Location: /index.php");
 }
 ?>
